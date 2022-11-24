@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:1.26.0
+    container_name: vaultwarden
+    restart: always
+    environment:
+      WEBSOCKET_ENABLED: "true"  # Enable WebSocket notifications.
+    volumes:
+      - ./vw-data:/data
+
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: always
+    ports:
+      - 80:80  # Needed for the ACME HTTP-01 challenge.
+      - 443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy-config:/config
+      - ./caddy-data:/data
+    environment:
+      DOMAIN: ${CERT_DOMAIN}
+      EMAIL: ${CERT_EMAIL}
+      LOG_FILE: "/data/access.log"
